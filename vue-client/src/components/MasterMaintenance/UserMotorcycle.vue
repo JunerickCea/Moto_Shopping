@@ -6,13 +6,6 @@
             style="position: sticky; top: 0px; z-index: 10;">
             <v-icon class="mr-2">mdi-motorbike</v-icon>
             <h1 class="text-lg sm:text-xl">Premiumbikes Shop</h1>
-            <v-spacer />
-            <v-btn icon variant="text" aria-label="Open cart" @click="openCart">
-                <v-badge v-if="isLoggedIn && cart.length > 0" :content="cart.length" color="red">
-                    <v-icon color="primary">mdi-cart</v-icon>
-                </v-badge>
-                <v-icon v-else color="primary">mdi-cart</v-icon>
-            </v-btn>
         </v-card-title>
         <v-container class="px-2 px-sm-4">
             <br>
@@ -67,6 +60,7 @@
                         class="w-full sm:w-auto">Clear Filter</v-btn>
                 </div>
             </v-card>
+            <BrandMarquee class="mt-4" :stocked-brands="brandItems" @select="(brand) => motorBrand = brand" />
             <br>
 
 
@@ -120,6 +114,15 @@
 
         </v-container>
     </v-card>
+
+    <!-- Floating cart: stays in the bottom-right corner while the page scrolls -->
+    <v-btn class="cart-fab" icon size="x-large" color="primary" elevation="8" aria-label="Open cart"
+        @click="openCart">
+        <v-badge v-if="isLoggedIn && cart.length > 0" :content="cart.length" color="red">
+            <v-icon size="30">mdi-cart</v-icon>
+        </v-badge>
+        <v-icon v-else size="30">mdi-cart</v-icon>
+    </v-btn>
 
     <v-dialog v-model="eyeDialog" max-width="700px" persistent scrollable :fullscreen="$vuetify.display.xs">
         <v-card class="bg-gradient-to-t from-slate-800 via-slate-800 to-black text-white">
@@ -323,6 +326,7 @@
 import api, { errorMessage } from '../../services/api';
 import { useMainStore } from '../../stores/mainStore';
 import { peso } from '../../utils/format';
+import BrandMarquee from '../Dashboard/BrandMarquee.vue';
 
 const readCart = () => {
     try {
@@ -333,6 +337,7 @@ const readCart = () => {
 };
 
 export default {
+    components: { BrandMarquee },
     setup() {
         return { store: useMainStore() };
     },
@@ -586,6 +591,20 @@ export default {
 </script>
 
 <style scope>
+.cart-fab {
+    position: fixed !important;
+    right: 24px;
+    bottom: 24px;
+    z-index: 1005;
+}
+
+@media (max-width: 599px) {
+    .cart-fab {
+        right: 16px;
+        bottom: 16px;
+    }
+}
+
 .tabs {
     color: rgb(205, 198, 198);
     font-size: 16px;
