@@ -6,7 +6,8 @@
 				<router-link to="/" class="text-white">Premiumbikes</router-link>
 			</v-app-bar-title>
 			<template v-if="store.user">
-				<span class="mr-3 text-subtitle-1 font-weight-bold d-none d-sm-inline">{{ store.user.name }}</span>
+				<v-btn variant="text" class="mr-2 d-none d-sm-flex text-none text-subtitle-1 font-weight-bold" to="/profile"
+					prepend-icon="mdi-account-circle">{{ store.user.name }}</v-btn>
 				<v-btn v-if="xs" icon="mdi-logout" color="red" aria-label="logout" @click="logout()" />
 				<v-btn v-else @click="logout()" variant="elevated" color="red" class="mr-2">logout</v-btn>
 			</template>
@@ -36,6 +37,8 @@
 					prepend-icon="mdi-view-dashboard" />
 				<v-list-item v-if="store.user" class="Menu pa-4" style="color: #ffffff;" title="My Orders"
 					to="/myorders" prepend-icon="mdi-clipboard-list" />
+				<v-list-item v-if="store.user" class="Menu pa-4" style="color: #ffffff;" title="My Profile"
+					to="/profile" prepend-icon="mdi-account-circle" />
 				<template v-if="store.isAdmin">
 					<v-list-item class="Menu pa-4" style="color: #ffffff;" title="Motorcycle Master"
 						to="/motorshopmaster" prepend-icon="mdi-security" />

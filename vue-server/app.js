@@ -12,6 +12,7 @@ const motorcycleRoutes = require('./routes/motorcycles');
 const orderRoutes = require('./routes/orders');
 const feedbackRoutes = require('./routes/feedback');
 const shopRoutes = require('./routes/shop');
+const { profileRoutes } = require('./routes/profile');
 
 const CLIENT_DIST = path.join(__dirname, '..', 'vue-client', 'dist');
 const SESSION_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
@@ -51,11 +52,9 @@ function createApp({ config, db, pool, verifyGoogleToken = null, limits = {}, cl
   }));
   api.use(loadUser);
 
-  api.use('/auth', authRoutes({
-    config,
-    verifyGoogleToken,
-    limits: { login: 10, register: 10, google: 30, ...limits },
-  }));
+  const rateLimits = { login: 10, register: 10, google: 30, password: 10, ...limits };
+  api.use('/auth', authRoutes({ config, verifyGoogleToken, limits: rateLimits }));
+  api.use('/profile', profileRoutes({ limits: rateLimits }));
   api.use('/users', usersRoutes);
   api.use('/motorcycles', motorcycleRoutes);
   api.use('/orders', orderRoutes);

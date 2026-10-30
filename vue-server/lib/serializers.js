@@ -4,19 +4,23 @@ const toIsoDate = (value) => {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
 };
 
+// The logged-in user's own account, including the saved delivery details used to pre-fill checkout.
 const sessionUser = (u) => ({
   id: u.id,
   name: u.name,
   email: u.email,
   role: u.role,
   avatarUrl: u.avatar_url,
+  contactNo: u.contact_no || '',
+  address: u.address || '',
+  paymentMethod: u.payment_method || null,
+  hasPassword: Boolean(u.password_hash),
+  hasGoogle: Boolean(u.google_sub),
 });
 
 const adminUser = (u) => ({
   ...sessionUser(u),
   isActive: u.is_active,
-  hasPassword: Boolean(u.password_hash),
-  hasGoogle: Boolean(u.google_sub),
   createdAt: u.created_at,
   lastLoginAt: u.last_login_at,
 });

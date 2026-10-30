@@ -1,4 +1,7 @@
-const pesoFormat = new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' });
+// Same list the server accepts (vue-server/lib/paymentMethods.js).
+export const PAYMENT_METHODS = ['Cash-on-Delivery', 'Credit Card', 'Debit Card'];
+
+const pesoFormat =new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' });
 
 // 8999.99 -> "₱8,999.99"
 export const peso = (value) => pesoFormat.format(Number(value) || 0);

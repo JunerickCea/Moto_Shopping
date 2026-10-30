@@ -1,7 +1,7 @@
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
 const { z } = require('zod');
-const { hashPassword, verifyPassword } = require('../lib/passwords');
+const { hashPassword, verifyPassword, newPasswordRule } = require('../lib/passwords');
 const { logIn, destroy, destroyUserSessions } = require('../lib/session');
 const { sessionUser } = require('../lib/serializers');
 const { requireAuth } = require('../middleware/auth');
@@ -10,9 +10,7 @@ const email = z.string().trim().toLowerCase().max(254).pipe(z.email());
 const registerSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(100),
   email,
-  password: z.string()
-    .min(8, 'Password must be at least 8 characters')
-    .refine((p) => Buffer.byteLength(p) <= 72, 'Password is too long'),
+  password: newPasswordRule,
 });
 const loginSchema = z.object({ email, password: z.string().min(1).max(200) });
 const googleSchema = z.object({ credential: z.string().min(1).max(4096) });

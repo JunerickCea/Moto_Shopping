@@ -31,6 +31,12 @@ const routes = [
 		component: () => import('../components/MyOrders.vue'),
 		meta: { requiresAuth: true, roles: ['User', 'Admin'] }
 	},
+	{
+		name: 'Profile',
+		path: '/profile',
+		component: () => import('../components/ProfilePage.vue'),
+		meta: { requiresAuth: true }
+	},
 	{ path: '/usermotorcycle', redirect: { name: 'Dashboard' } },
 	{
 		path: '/:pathMatch(.*)*',

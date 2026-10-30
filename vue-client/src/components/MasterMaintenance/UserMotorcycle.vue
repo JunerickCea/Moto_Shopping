@@ -240,7 +240,7 @@
                     <v-col cols="12" sm="6">
                         <v-select v-model="customerInfo.paymentMethod" density="compact" label="Payment Method"
                             prepend-inner-icon="mdi-credit-card-settings-outline"
-                            :items="['Cash-on-Delivery', 'Credit Card', 'Debit Card']"></v-select>
+                            :items="paymentMethods"></v-select>
                     </v-col>
                     <v-col cols="12" sm="6">
                         <v-text-field v-model="customerInfo.contactNo" density="compact" label="Contact No. #"
@@ -249,6 +249,10 @@
                     <v-col cols="12">
                         <v-text-field v-model="customerInfo.address" density="compact" label="Address"
                             prepend-inner-icon="mdi-map-marker"></v-text-field>
+                    </v-col>
+                    <v-col cols="12" class="pt-0">
+                        <v-checkbox v-model="saveToProfile" color="primary" density="compact" hide-details
+                            label="Save these details to my profile for next time" />
                     </v-col>
                 </v-row>
             </v-card-text>
@@ -325,7 +329,7 @@
 <script>
 import api, { errorMessage } from '../../services/api';
 import { useMainStore } from '../../stores/mainStore';
-import { peso } from '../../utils/format';
+import { PAYMENT_METHODS, peso } from '../../utils/format';
 import BrandMarquee from '../Dashboard/BrandMarquee.vue';
 
 const readCart = () => {
@@ -344,6 +348,8 @@ export default {
     data() {
         return {
             placingOrder: false,
+            saveToProfile: true,
+            paymentMethods: PAYMENT_METHODS,
             customerInfo: {
                 fullName: '',
                 email: '',
@@ -459,6 +465,7 @@ export default {
                     customerInfo: this.customerInfo,
                 });
 
+                if (this.saveToProfile) await this.saveDetailsToProfile();
                 this.cart = this.cart.filter(item => !item.selected);
                 try {
                     // Save now: we leave this page before the cart watcher would run.
@@ -481,6 +488,27 @@ export default {
             }
         },
 
+        // Copies the checkout details into the profile (only when they changed). The order is already
+        // placed, so a failure here is not shown as an order error.
+        async saveDetailsToProfile() {
+            const { user } = this.store;
+            const info = this.customerInfo;
+            const next = {
+                name: info.fullName.trim() || user.name,
+                contactNo: info.contactNo.trim(),
+                address: (info.address || '').trim(),
+                paymentMethod: info.paymentMethod || null,
+            };
+            const unchanged = next.name === user.name && next.contactNo === user.contactNo
+                && next.address === user.address && next.paymentMethod === user.paymentMethod;
+            if (unchanged) return;
+            try {
+                const { data } = await api.put('/profile', next);
+                this.store.setUser(data.user);
+            } catch (error) {
+                console.error('Could not save details to profile:', error);
+            }
+        },
         prepareSelectedCartItems() {
             this.selectedCartItems = this.cart.filter(item => item.selected);
         },
@@ -532,14 +560,16 @@ export default {
             this.store.requireLogin(() => this.showCustomerInfo());
         },
         showCustomerInfo() {
+            // Pre-filled from the saved profile (My Profile page).
             const { user } = this.store;
             this.customerInfo = {
                 fullName: user?.name || '',
                 email: user?.email || '',
-                paymentMethod: '',
-                contactNo: '',
-                address: '',
+                paymentMethod: user?.paymentMethod || '',
+                contactNo: user?.contactNo || '',
+                address: user?.address || '',
             };
+            this.saveToProfile = true;
             this.customerInfoDialog = true
             this.cartDialog = false
         },

@@ -3,6 +3,7 @@ const { z } = require('zod');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { order: serializeOrder } = require('../lib/serializers');
 const { HttpError } = require('../lib/httpError');
+const { PAYMENT_METHODS } = require('../lib/paymentMethods');
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ const orderSchema = z.object({
     email: z.string().trim().max(254).pipe(z.email()),
     contactNo: z.string().trim().min(5).max(30),
     address: z.string().trim().max(300).optional().default(''),
-    paymentMethod: z.enum(['Cash-on-Delivery', 'Credit Card', 'Debit Card']),
+    paymentMethod: z.enum(PAYMENT_METHODS),
   }),
 });
 

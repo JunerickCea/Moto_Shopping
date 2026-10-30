@@ -8,7 +8,9 @@
             <v-alert v-if="message" :type="messageType" variant="tonal" density="compact" class="mb-4"
                 :text="message" />
 
-            <v-form ref="form" @submit.prevent="save">
+            <v-progress-linear v-if="loading" indeterminate class="mb-4" />
+            <!-- Disabled until the saved details arrive, so they can't overwrite what the admin is typing -->
+            <v-form ref="form" :disabled="loading" @submit.prevent="save">
                 <v-row dense>
                     <v-col cols="12" sm="6">
                         <v-text-field v-model="info.name" label="Shop name" variant="outlined" density="compact"
@@ -54,6 +56,7 @@ const info = ref({ name: '', address: '', contactNo: '', openingHours: '' });
 // The map preview updates shortly after typing stops, not on every keystroke.
 const preview = ref({ ...info.value });
 const form = ref(null);
+const loading = ref(true);
 const saving = ref(false);
 const message = ref('');
 const messageType = ref('success');
@@ -91,6 +94,8 @@ onMounted(async () => {
     } catch (err) {
         messageType.value = 'error';
         message.value = errorMessage(err);
+    } finally {
+        loading.value = false;
     }
 });
 </script>
