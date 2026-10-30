@@ -1,0 +1,26 @@
+{
+  "name": "vue-tailwind-template",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@mdi/font": "^7.4.47",
+    "axios": "^1.13.2",
+    "pinia": "^2.0.10",
+    "vue": "^3.2.25",
+    "vue-router": "^4.0.12",
+    "vuetify": "^3.9.0-beta.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.4",
+    "autoprefixer": "^10.6.2",
+    "postcss": "^8.5.32",
+    "tailwindcss": "^3.4.19",
+    "vite": "^5.4.21"
+  },
+  "author": "John Fritz"
+}

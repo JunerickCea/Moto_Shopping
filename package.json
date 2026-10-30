@@ -1,0 +1,15 @@
+{
+  "name": "premiumbikes",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Vue client built into static files and served by the Express API (one Render web service)",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "npm --prefix vue-client install --include=dev && npm --prefix vue-client run build && npm --prefix vue-server install",
+    "migrate": "npm --prefix vue-server run migrate",
+    "start": "npm run migrate && node vue-server/index.js",
+    "test": "npm --prefix vue-server test"
+  }
+}
