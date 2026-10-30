@@ -7,6 +7,11 @@
         </v-card-title>
 
         <v-container class="px-2 px-sm-4">
+            <v-alert v-if="placedId" type="success" variant="tonal" class="mb-4" closable
+                title="Order placed successfully!" @click:close="dismissPlaced">
+                Thank you! Order #{{ placedId }} is now <strong>Pending</strong>. We'll update its status here once
+                it ships.
+            </v-alert>
             <v-alert v-if="error" type="error" variant="tonal" class="mb-4" :text="error" />
             <v-progress-linear v-if="loading" indeterminate class="mb-4" />
 
@@ -16,10 +21,14 @@
                 <v-btn color="primary" to="/">Browse motorcycles</v-btn>
             </div>
 
-            <v-card v-for="order in orders" :key="order._id" class="bg-gray-700 text-white mb-4 pa-3 pa-sm-4">
+            <v-card v-for="order in orders" :key="order._id" class="bg-gray-700 text-white mb-4 pa-3 pa-sm-4"
+                :class="{ 'order--new': order._id === placedId }">
                 <div class="d-flex flex-wrap align-center ga-2 mb-3">
                     <div>
-                        <div class="font-weight-bold">Order #{{ order._id }}</div>
+                        <div class="font-weight-bold">
+                            Order #{{ order._id }}
+                            <v-chip v-if="order._id === placedId" size="x-small" color="success" class="ml-1">New</v-chip>
+                        </div>
                         <div class="text-caption">{{ formatDateTime(order.orderDate) }}</div>
                     </div>
                     <v-spacer />
@@ -99,11 +108,22 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import api, { errorMessage } from '../services/api';
 import { formatDateTime, peso } from '../utils/format';
 
 const { xs } = useDisplay();
+const route = useRoute();
+const router = useRouter();
+
+// Set when checkout sends the customer here (?placed=<order id>).
+const placedId = ref(typeof route.query.placed === 'string' ? route.query.placed : '');
+
+function dismissPlaced() {
+    placedId.value = '';
+    router.replace({ name: 'MyOrders' });
+}
 
 const orders = ref([]);
 const loading = ref(true);
@@ -163,5 +183,9 @@ onMounted(async () => {
 
 .min-w-0 {
     min-width: 0;
+}
+
+.order--new {
+    outline: 2px solid rgb(var(--v-theme-success));
 }
 </style>

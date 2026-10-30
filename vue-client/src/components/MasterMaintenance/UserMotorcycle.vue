@@ -454,18 +454,24 @@ export default {
             this.placingOrder = true;
             try {
                 // The server prices the order from its own data; only ids and quantities are sent.
-                await api.post('/orders', {
+                const { data: placed } = await api.post('/orders', {
                     items: this.selectedCartItems.map(({ _id, quantity }) => ({ _id, quantity })),
                     customerInfo: this.customerInfo,
                 });
 
-                alert('Order placed successfully!');
                 this.cart = this.cart.filter(item => !item.selected);
+                try {
+                    // Save now: we leave this page before the cart watcher would run.
+                    localStorage.setItem('cart', JSON.stringify(this.cart));
+                } catch {
+                    // storage unavailable
+                }
                 this.selectedCartItems = [];
                 this.customerInfo = {};
-                this.getMotorcycles();
                 this.reviewDialog = false;
                 this.cartDialog = false;
+                // Show the customer all their orders, with the new one highlighted.
+                this.$router.push({ name: 'MyOrders', query: { placed: placed._id } });
             } catch (error) {
                 console.error('Order error:', error);
                 alert(errorMessage(error, 'Failed to place order. Please try again.'));

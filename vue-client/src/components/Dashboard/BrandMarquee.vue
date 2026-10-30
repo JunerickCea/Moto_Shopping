@@ -161,14 +161,10 @@ const stockedName = (brand) => props.stockedBrands.find((b) => brand.match.inclu
     }
 }
 
-/* Respect "reduce motion": no auto-scroll, let people swipe through the brands instead */
+/* Devices set to "reduce motion" still loop (shop requirement), but at half speed; hover/touch still pauses */
 @media (prefers-reduced-motion: reduce) {
-    .marquee {
-        overflow-x: auto;
-    }
-
     .marquee__track {
-        animation: none;
+        animation-duration: 90s;
     }
 }
 </style>
