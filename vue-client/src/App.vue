@@ -1,52 +1,47 @@
 <template>
 	<v-app>
+		<!-- Top navigation: labels on wider screens, icons (with tooltips) on phones -->
 		<v-app-bar color="#000000" density="comfortable">
-			<v-app-bar-nav-icon aria-label="Menu" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-			<v-app-bar-title>
-				<router-link to="/" class="text-white">Premiumbikes</router-link>
-			</v-app-bar-title>
-			<template v-if="store.user">
-				<v-btn variant="text" class="mr-2 d-none d-sm-flex text-none text-subtitle-1 font-weight-bold" to="/profile"
-					prepend-icon="mdi-account-circle">{{ store.user.name }}</v-btn>
-				<v-btn v-if="xs" icon="mdi-logout" color="red" aria-label="logout" @click="logout()" />
-				<v-btn v-else @click="logout()" variant="elevated" color="red" class="mr-2">logout</v-btn>
-			</template>
-			<v-btn v-else-if="route.name !== 'Login'" variant="elevated" color="primary" prepend-icon="mdi-login"
-				class="mr-2" @click="store.requireLogin()">Log in</v-btn>
-		</v-app-bar>
+			<router-link to="/" class="d-flex align-center text-white ml-3 ml-sm-4 mr-2" aria-label="Premiumbikes home">
+				<v-icon color="primary" size="30">mdi-motorbike</v-icon>
+				<span class="ml-2 text-h6 font-weight-bold d-none d-sm-inline">Premiumbikes</span>
+			</router-link>
+			<v-spacer />
 
-		<v-navigation-drawer v-model="drawer" temporary elevation="4"
-			class="bg-gradient-to-t from-slate-800 via-slate-800 to-black">
-			<div v-if="store.user" class="pt-6 pb-2 text-center text-white border-b border-gray-600">
-				<v-avatar size="96" class="border-2 border-gray-400" color="primary">
-					<v-img v-if="store.user.avatarUrl" alt="User avatar" referrerpolicy="no-referrer"
-						:src="store.user.avatarUrl"></v-img>
-					<span v-else class="text-h4">{{ initials }}</span>
-				</v-avatar>
-				<div class="font-semibold text-md text-gray-200 mt-2 px-4">{{ store.user.name }}</div>
-				<div class="text-sm px-4 text-gray-300 text-truncate">{{ store.user.email }}</div>
-			</div>
-			<div v-else class="pa-6 text-center text-white">
-				<v-icon size="64" color="primary">mdi-motorbike</v-icon>
-				<p class="mt-2 mb-4 text-gray-300">Log in to buy a motorcycle and track your orders.</p>
-				<v-btn color="primary" block prepend-icon="mdi-login" @click="drawer = false; store.requireLogin()">Log
-					in</v-btn>
-			</div>
-			<v-list nav density="compact">
-				<v-list-item class="Menu pa-4" style="color: #ffffff;" title="Dashboard" to="/" exact
-					prepend-icon="mdi-view-dashboard" />
-				<v-list-item v-if="store.user" class="Menu pa-4" style="color: #ffffff;" title="My Orders"
-					to="/myorders" prepend-icon="mdi-clipboard-list" />
-				<v-list-item v-if="store.user" class="Menu pa-4" style="color: #ffffff;" title="My Profile"
-					to="/profile" prepend-icon="mdi-account-circle" />
-				<template v-if="store.isAdmin">
-					<v-list-item class="Menu pa-4" style="color: #ffffff;" title="Motorcycle Master"
-						to="/motorshopmaster" prepend-icon="mdi-security" />
-					<v-list-item class="Menu pa-4" style="color: #ffffff;" title="Users Master"
-						to="/usersmaster" prepend-icon="mdi-account-group-outline" />
+			<nav class="d-flex align-center ga-1" aria-label="Main">
+				<template v-for="link in navLinks" :key="link.to">
+					<v-btn v-if="compact" :to="link.to" :exact="link.exact" :icon="link.icon" variant="text"
+						:aria-label="link.title" class="nav-btn">
+						<v-icon>{{ link.icon }}</v-icon>
+						<v-tooltip activator="parent" location="bottom">{{ link.title }}</v-tooltip>
+					</v-btn>
+					<v-btn v-else :to="link.to" :exact="link.exact" :prepend-icon="link.icon" variant="text"
+						class="nav-btn text-none">{{ link.title }}</v-btn>
 				</template>
-			</v-list>
-		</v-navigation-drawer>
+			</nav>
+
+			<v-menu v-if="store.user" location="bottom end" offset="8">
+				<template #activator="{ props }">
+					<v-btn v-bind="props" icon variant="text" class="mx-1 mr-sm-3" aria-label="Account menu">
+						<v-avatar size="36" color="primary">
+							<v-img v-if="store.user.avatarUrl" alt="" referrerpolicy="no-referrer"
+								:src="store.user.avatarUrl" />
+							<span v-else class="text-subtitle-2 font-weight-bold">{{ initials }}</span>
+						</v-avatar>
+					</v-btn>
+				</template>
+				<v-list density="compact" min-width="240">
+					<v-list-item :title="store.user.name" :subtitle="store.user.email" class="pb-2" />
+					<v-divider />
+					<v-list-item to="/myorders" prepend-icon="mdi-clipboard-list" title="My Orders" />
+					<v-list-item to="/profile" prepend-icon="mdi-account-circle" title="My Profile" />
+					<v-divider />
+					<v-list-item prepend-icon="mdi-logout" title="Log out" base-color="red" @click="logout()" />
+				</v-list>
+			</v-menu>
+			<v-btn v-else-if="route.name !== 'Login'" variant="elevated" color="primary" prepend-icon="mdi-login"
+				class="mx-2 mr-sm-3" @click="store.requireLogin()">Log in</v-btn>
+		</v-app-bar>
 
 		<v-main class="bg-gray-900">
 			<v-container fluid class="px-2 px-sm-4">
@@ -83,7 +78,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import LoginForm from './components/LoginForm.vue';
@@ -92,8 +87,18 @@ import { useMainStore } from './stores/mainStore';
 const store = useMainStore();
 const router = useRouter();
 const route = useRoute();
-const { xs } = useDisplay();
-const drawer = ref(false);
+const { xs, mdAndDown } = useDisplay();
+
+const navLinks = computed(() => [
+	{ title: 'Shop', to: '/', icon: 'mdi-storefront', exact: true },
+	...(store.user ? [{ title: 'My Orders', to: '/myorders', icon: 'mdi-clipboard-list' }] : []),
+	...(store.isAdmin ? [
+		{ title: 'Motorcycle Master', to: '/motorshopmaster', icon: 'mdi-security' },
+		{ title: 'Users Master', to: '/usersmaster', icon: 'mdi-account-group-outline' },
+	] : []),
+]);
+// Admins have four links, so they switch to icons a size earlier than customers.
+const compact = computed(() => (store.isAdmin ? mdAndDown.value : xs.value));
 const icons = ['mdi-facebook', 'mdi-twitter', 'mdi-linkedin', 'mdi-instagram'];
 const year = new Date().getFullYear();
 
@@ -110,3 +115,10 @@ async function logout() {
 	router.push({ name: 'Dashboard' });
 }
 </script>
+
+<style scoped>
+/* Highlight the page you are on */
+.nav-btn.v-btn--active {
+	color: rgb(var(--v-theme-primary)) !important;
+}
+</style>

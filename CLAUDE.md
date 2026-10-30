@@ -41,5 +41,6 @@ Server tests need a **throwaway** Postgres: set `TEST_DATABASE_URL` (tests trunc
 ### Client (`vue-client/`)
 - All API calls go through `services/api.js` (`baseURL: '/api'`, same-origin). A 401 anywhere except `/auth/*` triggers the unauthorized handler wired in `main.js` (clears the user, goes to login). `errorMessage(err)` extracts the server's `error` text.
 - Roles: `Admin` sees Motorcycle Master (`MotorShop.vue`, tabs Inventory / Orders / Feedback / Shop Info — the last two are `FeedbackAdmin.vue` and `ShopInfoAdmin.vue`) and Users Master; logged-in users also get My Orders (where shipped orders can be reviewed). Admin-only API routes enforce this server-side too.
+- Navigation is the top app bar in `App.vue` (no side drawer): `navLinks` is built from the role, labels collapse to icons with tooltips on small screens, and the avatar menu holds My Orders / My Profile / Log out.
 - Prices are pesos: format with `peso()` from `utils/format.js`. Screens must work at phone width: dialogs use `:fullscreen="$vuetify.display.xs"`, form columns `cols="12" sm="6"`, tables `:mobile="$vuetify.display.xs"`.
 - Vuetify is the main UI library; Tailwind classes are used for layout. `About.vue`, `Blank.vue`, `BackBtn.vue`, `Pill.vue` and a few `src/views/*View.vue` files are unrouted scaffold leftovers.
