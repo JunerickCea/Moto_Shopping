@@ -12,9 +12,11 @@ import { useMainStore } from './stores/mainStore'
 
 const pinia = createPinia()
 
+// The session ended (expired, logged out elsewhere, or disabled by an admin).
 setUnauthorizedHandler(() => {
   useMainStore(pinia).user = null
-  router.push({ name: 'Login' })
+  const current = router.currentRoute.value
+  if (current.meta.requiresAuth) router.push({ name: 'Login', query: { redirect: current.fullPath } })
 })
 
 createApp(App)

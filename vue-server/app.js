@@ -10,6 +10,8 @@ const { authRoutes } = require('./routes/auth');
 const usersRoutes = require('./routes/users');
 const motorcycleRoutes = require('./routes/motorcycles');
 const orderRoutes = require('./routes/orders');
+const feedbackRoutes = require('./routes/feedback');
+const shopRoutes = require('./routes/shop');
 
 const CLIENT_DIST = path.join(__dirname, '..', 'vue-client', 'dist');
 const SESSION_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
@@ -57,6 +59,8 @@ function createApp({ config, db, pool, verifyGoogleToken = null, limits = {}, cl
   api.use('/users', usersRoutes);
   api.use('/motorcycles', motorcycleRoutes);
   api.use('/orders', orderRoutes);
+  api.use('/feedback', feedbackRoutes);
+  api.use('/shop', shopRoutes);
   api.use((req, res) => res.status(404).json({ error: 'Not found.' }));
   app.use('/api', api);
 

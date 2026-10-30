@@ -24,11 +24,12 @@ describe('shop', { skip: !h.enabled && 'set TEST_DATABASE_URL to run' }, () => {
   const order = (a, items, info = h.customerInfo()) => a.post('/api/orders').send({ items, customerInfo: info });
 
   describe('motorcycles', () => {
-    it('requires login to list and returns the field names the client uses', async () => {
-      await h.request(app).get('/api/motorcycles').expect(401);
+    it('lists publicly with the field names the client uses, but only admins can write', async () => {
       const created = await addBike();
-      const list = (await user.get('/api/motorcycles').expect(200)).body;
+      const list = (await h.request(app).get('/api/motorcycles').expect(200)).body;
       assert.deepEqual(list, [created]);
+      await h.request(app).post('/api/motorcycles').send(h.bike()).expect(401);
+      await user.post('/api/motorcycles').send(h.bike()).expect(403);
       assert.deepEqual(Object.keys(created).sort(), ['Brand', 'Image', 'MotorcycleName', 'Price', 'Quantity', 'ReleaseDate', 'Stock', '_id']);
       assert.equal(created.ReleaseDate, '2024-03-01');
       assert.equal(created.Price, 7000);

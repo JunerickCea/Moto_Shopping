@@ -30,7 +30,8 @@ async function setup() {
 }
 
 async function reset(db) {
-  await db.raw('truncate table order_items, orders, motorcycles, session, users restart identity cascade');
+  await db.raw('truncate table feedback, order_items, orders, motorcycles, session, users restart identity cascade');
+  await db('shop_info').update({ name: 'Premiumbikes', address: '', contact_no: '', opening_hours: '' });
 }
 
 function build(handle, overrides = {}) {
@@ -73,4 +74,12 @@ const customerInfo = (overrides = {}) => ({
   ...overrides,
 });
 
-module.exports = { enabled, setup, reset, build, agent, createUser, loggedIn, bike, customerInfo, request };
+// Places a one-bike order as `buyer` and has `admin` mark it shipped; returns the order.
+async function shippedOrder(admin, buyer, info = customerInfo()) {
+  const { _id } = (await admin.post('/api/motorcycles').send(bike()).expect(201)).body;
+  const placed = (await buyer.post('/api/orders').send({ items: [{ _id, quantity: 1 }], customerInfo: info }).expect(201)).body;
+  await admin.patch(`/api/orders/${placed._id}/status`).send({ status: 'Shipped' }).expect(200);
+  return placed;
+}
+
+module.exports = { enabled, setup, reset, build, agent, createUser, loggedIn, bike, customerInfo, shippedOrder, request };

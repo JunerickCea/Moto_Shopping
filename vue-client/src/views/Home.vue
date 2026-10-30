@@ -1,11 +1,13 @@
 <template>
-  <div >
-    <v-toolbar color="primary">Home</v-toolbar>
+  <div class="d-flex flex-column ga-6">
+    <UserMotorcycle />
+    <FeedbackSection />
+    <ShopLocation />
   </div>
 </template>
 
-<script>
-export default {
-  name: "Home",
-};
+<script setup>
+import UserMotorcycle from '../components/MasterMaintenance/UserMotorcycle.vue';
+import FeedbackSection from '../components/Dashboard/FeedbackSection.vue';
+import ShopLocation from '../components/Dashboard/ShopLocation.vue';
 </script>

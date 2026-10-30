@@ -3,10 +3,10 @@ import { useMainStore } from '../stores/mainStore'
 
 const routes = [
 	{
-		name: 'Home',
+		// Public: guests browse here and are asked to log in only when they add to cart or check out.
+		name: 'Dashboard',
 		path: '/',
-		component: () => import('@/views/Home.vue'),
-		meta: { requiresAuth: true }
+		component: () => import('@/views/Home.vue')
 	},
 	{
 		name: 'Login',
@@ -26,37 +26,35 @@ const routes = [
 		meta: { requiresAuth: true, roles: ['Admin'] }
 	},
 	{
-		name: 'UserMotorcycle',
-		path: '/usermotorcycle',
-		component: () => import('../components/MasterMaintenance/UserMotorcycle.vue'),
-		meta: { requiresAuth: true, roles: ['User', 'Admin'] }
-	},
-	{
 		name: 'MyOrders',
 		path: '/myorders',
 		component: () => import('../components/MyOrders.vue'),
 		meta: { requiresAuth: true, roles: ['User', 'Admin'] }
 	},
+	{ path: '/usermotorcycle', redirect: { name: 'Dashboard' } },
 	{
 		path: '/:pathMatch(.*)*',
-		redirect: { name: 'Home' }
+		redirect: { name: 'Dashboard' }
 	}
 ]
 
 const router = createRouter({
 	history: createWebHistory(import.meta.env.BASE_URL),
-	routes
+	routes,
+	scrollBehavior: () => ({ top: 0 })
 })
 
 router.beforeEach(async (to) => {
 	const store = useMainStore()
 	if (!store.ready) await store.fetchMe()
 
-	const home = store.isAdmin ? { name: 'MotorShopMaster' } : { name: 'UserMotorcycle' }
-	if (to.name === 'Login') return store.isLoggedIn ? home : true
-	if (!store.isLoggedIn) return { name: 'Login' }
-	if (to.name === 'Home') return home
-	if (to.meta.roles && !to.meta.roles.includes(store.user.role)) return home
+	if (to.name === 'Login' && store.isLoggedIn) {
+		return store.isAdmin ? { name: 'MotorShopMaster' } : { name: 'Dashboard' }
+	}
+	if (to.meta.requiresAuth && !store.isLoggedIn) {
+		return { name: 'Login', query: { redirect: to.fullPath } }
+	}
+	if (to.meta.roles && !to.meta.roles.includes(store.user.role)) return { name: 'Dashboard' }
 	return true
 })
 

@@ -21,7 +21,8 @@ Server tests need a **throwaway** Postgres: set `TEST_DATABASE_URL` (tests trunc
 ## Architecture
 
 ### Auth and sessions (the part that spans files)
-- Login state lives only in a server-side session: `express-session` + `connect-pg-simple` (table `session`), cookie `sid` (`httpOnly`, `SameSite=Lax`, `Secure` in production, 7-day rolling). The client stores no tokens or user data; `stores/mainStore.js` calls `GET /api/auth/me` on first navigation and the router guard (`router/index.js`) enforces both login and `meta.roles`.
+- Login state lives only in a server-side session: `express-session` + `connect-pg-simple` (table `session`), cookie `sid` (`httpOnly`, `SameSite=Lax`, `Secure` in production, 7-day rolling). The client stores no tokens or user data; `stores/mainStore.js` calls `GET /api/auth/me` on first navigation and the router guard (`router/index.js`) enforces `meta.requiresAuth` and `meta.roles`.
+- The dashboard (`/`, `views/Home.vue`) is public: guests browse the catalog, reviews and shop map. Buying actions go through `store.requireLogin(action)`, which opens the login pop-up in `App.vue` (shared `components/LoginForm.vue`) and runs the action after login. Public API reads: `GET /api/motorcycles`, `/api/feedback`, `/api/shop`.
 - `routes/auth.js`: bcrypt password login/registration and Google sign-in (ID token verified server-side by `lib/google.js`; tests inject a fake verifier through `createApp({ verifyGoogleToken })`). Logging in calls `req.session.regenerate` (`lib/session.js`).
 - `ADMIN_EMAILS` promotes an address to Admin **only on Google sign-in** (verified email). Password registrations are never auto-promoted, because their email is unverified. When a Google user links to an existing unverified password account, that account's password and sessions are wiped (pre-hijack protection).
 - Admin changes to a user (role, disable) delete that user's rows in `session` so they take effect immediately. Admins cannot change themselves.
@@ -32,10 +33,12 @@ Server tests need a **throwaway** Postgres: set `TEST_DATABASE_URL` (tests trunc
 - `app.js` exports `createApp({ config, db, pool, verifyGoogleToken, limits })` (used by `index.js` and tests); everything under `/api`, then static client + SPA fallback.
 - Routes use `req.app.locals.db` (knex). All queries use the query builder; keep it that way.
 - `routes/orders.js` places orders inside one transaction: locks motorcycle rows (`forUpdate`), checks stock, prices from DB (client-sent prices/totals are ignored), snapshots name/price/image into `order_items`. Only `Pending` orders can change status; cancelling restocks.
+- `routes/feedback.js`: one review per order (unique `order_id`), only for the buyer's own `Shipped` orders. Public list shortens names ("Juan D.") and never returns emails; admins can hide (`is_hidden`) or delete. `routes/shop.js` reads/writes the single-row `shop_info` table (id = 1) whose address drives the key-less Google Maps embed (`frame-src` in the CSP).
 - `lib/serializers.js` maps DB rows to the field names the Vue components use (`_id`, `Brand`, `MotorcycleName`, `Price`, `Stock`, `Image`, ...). Keep that mapping in one place rather than renaming fields in the large components.
 - Schema is in `db/migrations/`; Render runs `knex migrate:latest` on every start.
 
 ### Client (`vue-client/`)
 - All API calls go through `services/api.js` (`baseURL: '/api'`, same-origin). A 401 anywhere except `/auth/*` triggers the unauthorized handler wired in `main.js` (clears the user, goes to login). `errorMessage(err)` extracts the server's `error` text.
-- Roles: `Admin` sees Motorcycle Master (`MotorShop.vue`) and Users Master; everyone sees the shop (`UserMotorcycle.vue`) and My Orders. Admin-only API routes enforce this server-side too.
+- Roles: `Admin` sees Motorcycle Master (`MotorShop.vue`, tabs Inventory / Orders / Feedback / Shop Info — the last two are `FeedbackAdmin.vue` and `ShopInfoAdmin.vue`) and Users Master; logged-in users also get My Orders (where shipped orders can be reviewed). Admin-only API routes enforce this server-side too.
+- Prices are pesos: format with `peso()` from `utils/format.js`. Screens must work at phone width: dialogs use `:fullscreen="$vuetify.display.xs"`, form columns `cols="12" sm="6"`, tables `:mobile="$vuetify.display.xs"`.
 - Vuetify is the main UI library; Tailwind classes are used for layout. `About.vue`, `Blank.vue`, `BackBtn.vue`, `Pill.vue` and a few `src/views/*View.vue` files are unrouted scaffold leftovers.

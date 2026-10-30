@@ -1,6 +1,6 @@
 const express = require('express');
 const { z } = require('zod');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAdmin } = require('../middleware/auth');
 const { motorcycle } = require('../lib/serializers');
 
 const router = express.Router();
@@ -33,7 +33,8 @@ const toRow = (d) => ({
   image_url: d.Image,
 });
 
-router.get('/', requireAuth, async (req, res) => {
+// Public: guests browse the catalog on the dashboard and log in only to buy.
+router.get('/', async (req, res) => {
   const rows = await req.app.locals.db('motorcycles').orderBy('name');
   res.json(rows.map(motorcycle));
 });

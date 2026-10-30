@@ -71,7 +71,7 @@ describe('auth', { skip: !h.enabled && 'set TEST_DATABASE_URL to run' }, () => {
   it('issues a fresh session id on login', async () => {
     await register(h.agent(app)).expect(201);
     const a = h.agent(app);
-    const first = await a.get('/api/motorcycles'); // anonymous: 401, no cookie expected
+    const first = await a.get('/api/orders/mine'); // anonymous: 401, no cookie expected
     assert.equal(first.status, 401);
     const login = await a.post('/api/auth/login').send({ email: 'ana@example.com', password: 'a-long-password' }).expect(200);
     const again = await a.post('/api/auth/login').send({ email: 'ana@example.com', password: 'a-long-password' }).expect(200);

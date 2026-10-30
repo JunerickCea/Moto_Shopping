@@ -4,38 +4,41 @@
 
         <v-card-title class="flex items-center  border-b bg-black text-white"
             style="position: sticky; top: 0px; z-index: 10;">
-            <v-icon>mdi-motorbike</v-icon>
-            <h1>Motorcycle Shop User</h1>
+            <v-icon class="mr-2">mdi-motorbike</v-icon>
+            <h1 class="text-lg sm:text-xl">Premiumbikes Shop</h1>
             <v-spacer />
-            <v-badge :content="cart.length" color="red" overlap v-if="cart.length > 0">
-                <v-icon icon @click="cartDialog = true" color="primary">mdi-cart</v-icon>
-            </v-badge>
-            <v-icon v-else color="primary">mdi-cart</v-icon>
+            <v-btn icon variant="text" aria-label="Open cart" @click="openCart">
+                <v-badge v-if="isLoggedIn && cart.length > 0" :content="cart.length" color="red">
+                    <v-icon color="primary">mdi-cart</v-icon>
+                </v-badge>
+                <v-icon v-else color="primary">mdi-cart</v-icon>
+            </v-btn>
         </v-card-title>
-        <v-container>
+        <v-container class="px-2 px-sm-4">
             <br>
             <v-toolbar class="bg-gray-600 text-white text-lg font-seibold"><v-icon
                     class="ml-3 text-yellow-500">mdi-star</v-icon>Featured Motorcycles</v-toolbar>
-            <v-carousel v-model="currentSlide" height="600" interval="5000" :show-arrows-on-hover="true"
+            <v-carousel v-model="currentSlide" :height="carouselHeight" interval="5000"
+                :show-arrows="$vuetify.display.xs ? false : 'hover'"
                 transition="fade-transition" reverse-transition="fade-transition" hide-delimiters-on-hover
                 class="bg-gradient-to-t from-slate-800 via-slate-900 to-black" cycle>
                 <v-carousel-item v-for="motorcycle in motorcycleDetails" :key="motorcycle._id">
                     <v-img :src="motorcycle.Image" alt="Motorcycle"
                         class="w-full h-full object-cover rounded-lg hover:scale-110 transition-transform"></v-img>
-                    <div class="absolute inset-0 flex flex-col justify-between text-white px-10 py-8">
+                    <div class="absolute inset-0 flex flex-col justify-between text-white px-4 py-4 sm:px-10 sm:py-8">
                         <div>
                             <h1 class="px-3 py-1 text-xs font-semibold tracking-wide  uppercase">
                                 <v-icon class="mr-2 text-yellow-600">mdi-star</v-icon>
                                 Featured
                             </h1>
-                            <h2 class="mt-4 text-4xl font-bold">
+                            <h2 class="mt-2 sm:mt-4 text-2xl sm:text-4xl font-bold">
                                 {{ motorcycle.Brand }} {{ motorcycle.MotorcycleName }}
                             </h2>
-                            <p class="mt-2 text-lg opacity-80">
+                            <p class="mt-2 text-base sm:text-lg opacity-80">
                                 {{ motorcycle.Brand }}
                             </p>
-                            <p class="mt-4 text-3xl font-bold">
-                                ${{ new Intl.NumberFormat('en-US').format(motorcycle.Price) }}
+                            <p class="mt-2 sm:mt-4 text-xl sm:text-3xl font-bold">
+                                {{ peso(motorcycle.Price) }}
                             </p>
                         </div>
 
@@ -92,7 +95,7 @@
                                     <p class="text-sm opacity-80 mb-2">{{ motorcycle.Brand }}</p>
 
                                     <p class="text-2xl font-bold mb-2">
-                                        ${{ new Intl.NumberFormat('en-US').format(motorcycle.Price) }}
+                                        {{ peso(motorcycle.Price) }}
                                     </p>
 
                                     <p class="text-xs opacity-75">
@@ -118,28 +121,29 @@
         </v-container>
     </v-card>
 
-    <v-dialog v-model="eyeDialog" max-width="700px" persistent>
+    <v-dialog v-model="eyeDialog" max-width="700px" persistent scrollable :fullscreen="$vuetify.display.xs">
         <v-card class="bg-gradient-to-t from-slate-800 via-slate-800 to-black text-white">
 
-            <v-card-title class="flex gap-2">
+            <v-card-title class="flex items-center gap-2">
                 <v-icon class="text-2xl  border-2 border-green-600 rounded-full p-4  text-black"
                     style="background-color:#43A047">mdi-information-variant</v-icon>
-                <h1>Motorcycle Details</h1>
+                <h1 class="text-lg sm:text-xl">Motorcycle Details</h1>
                 <v-spacer />
-                <v-icon @click="closeEyeDialog()" color="red">mdi-close</v-icon>
+                <v-btn icon="mdi-close" variant="text" color="red" aria-label="Close" @click="closeEyeDialog()" />
             </v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col cols="12">
                         <v-img :src="checkItem?.Image" max-height="400" contain />
                     </v-col>
-                    <v-col cols="8" class="pa-4">
+                    <v-col cols="12" sm="8" class="pa-4">
+                        <p class="pa-2 text-lg font-bold">{{ checkItem?.Brand }} {{ checkItem?.MotorcycleName }}</p>
                         <p class="pa-2"><v-icon
                                 class="text-green-300 mr-2">mdi-tag-outline</v-icon><strong>Brand:</strong>
                             {{ checkItem?.Brand }}</p>
                         <p class="pa-2"><v-icon
-                                class="text-green-300 mr-2">mdi-currency-usd</v-icon><strong>Price:</strong>
-                            ${{ checkItem?.Price }}</p>
+                                class="text-green-300 mr-2">mdi-currency-php</v-icon><strong>Price:</strong>
+                            {{ peso(checkItem?.Price) }}</p>
                         <p class="pa-2"><v-icon
                                 class="text-green-300 mr-2">mdi-package-variant</v-icon><strong>Stock:</strong> {{
                                     checkItem?.Stock }}</p>
@@ -151,134 +155,136 @@
                     </v-col>
                 </v-row>
             </v-card-text>
+            <v-card-actions class="pa-4">
+                <v-spacer />
+                <v-btn :disabled="checkItem?.Stock <= 0" color="primary" variant="elevated" prepend-icon="mdi-cart"
+                    @click="closeEyeDialog(); addToCart(checkItem)">Add to cart</v-btn>
+            </v-card-actions>
         </v-card>
     </v-dialog>
 
     <!-- Cart Dialog -->
-    <v-dialog v-model="cartDialog" max-width="600px">
-        <v-card class="bg-gray-800">
-            <v-card-title class="flex mt-2 text-white ">
+    <!-- Cart Dialog -->
+    <v-dialog v-model="cartDialog" max-width="600px" scrollable :fullscreen="$vuetify.display.xs">
+        <v-card class="bg-gray-800 text-white">
+            <v-card-title class="flex items-center mt-2">
+                <v-icon class="mr-2">mdi-cart</v-icon>
                 <h1>Your Cart</h1>
                 <v-spacer />
-                <v-icon color="red" @click="cartDialog = false">mdi-close</v-icon>
+                <v-btn icon="mdi-close" variant="text" color="red" aria-label="Close" @click="cartDialog = false" />
             </v-card-title>
             <v-card-text>
-                <v-list-item v-for="item in cart" :key="item._id"
-                    class="bg-gradient-to-t from-slate-800 via-slate-800 to-black text-white">
-                    <v-list-item-content>
-                        <v-checkbox v-model="item.selected" :label="item.MotorcycleName" color="primary" />
-                        <v-list-item-title><v-img :src="item.Image"></v-img></v-list-item-title>
-                        <v-list-item-title class="text-4xl">{{ item.MotorcycleName }}</v-list-item-title>
-                        <v-list-item-subtitle class="pa-4">
-                            Quantity:
-                            <v-icon class="text-4xl" color="orange" @click="decrementQuantity(item)"
-                                :disabled="item.quantity <= 1">mdi-minus</v-icon>
-                            {{ item.quantity }}
-                            <v-icon class="text-4xl" color="success" @click="incrementQuantity(item)"
-                                :disabled="item.quantity >= item.Stock">mdi-plus</v-icon>
-                        </v-list-item-subtitle>
-                    </v-list-item-content>
-                    <v-list-item-action class="flex gap-2">
-                        <v-chip color="success" text-color="white">
-                            ${{ new Intl.NumberFormat('en-US').format(item.Price * item.quantity) }}
-                        </v-chip>
-                        <v-btn @click="removeFromCart(item._id)" class="bg-red-600">Remove Cart</v-btn>
-
-                    </v-list-item-action>
-                </v-list-item>
-                <v-row>
-                    <v-col cols="" />
-                    <v-col cols="5">
-                        <v-btn @click="openCheckOut" class="bg-green-600">Proceed to Check-out</v-btn>
-                    </v-col>
-                </v-row>
-                <v-divider v-if="cart.length === 0" />
-                <v-list-item v-if="cart.length === 0">
-                    <v-list-item-content><em>Your cart is empty</em></v-list-item-content>
-                </v-list-item>
+                <div v-for="item in cart" :key="item._id"
+                    class="bg-gradient-to-t from-slate-800 via-slate-800 to-black rounded-lg pa-3 mb-3">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <v-img :src="item.Image" class="rounded bg-gray-900 shrink-0 w-full sm:w-40" height="120"
+                            contain />
+                        <div class="flex-grow">
+                            <v-checkbox v-model="item.selected" color="primary" hide-details density="compact"
+                                :label="`${item.Brand} ${item.MotorcycleName}`" />
+                            <div class="d-flex align-center ga-2 mt-1">
+                                <span class="text-gray-300">Qty</span>
+                                <v-btn icon="mdi-minus" size="small" variant="tonal" color="orange"
+                                    aria-label="Decrease quantity" :disabled="item.quantity <= 1"
+                                    @click="decrementQuantity(item)" />
+                                <span class="text-lg font-bold px-1">{{ item.quantity }}</span>
+                                <v-btn icon="mdi-plus" size="small" variant="tonal" color="success"
+                                    aria-label="Increase quantity" :disabled="item.quantity >= item.Stock"
+                                    @click="incrementQuantity(item)" />
+                            </div>
+                            <div class="d-flex flex-wrap align-center ga-2 mt-3">
+                                <v-chip color="success">{{ peso(item.Price * item.quantity) }}</v-chip>
+                                <v-spacer />
+                                <v-btn size="small" color="red" variant="tonal" prepend-icon="mdi-delete"
+                                    @click="removeFromCart(item._id)">Remove</v-btn>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="cart.length === 0" class="text-center py-8 text-gray-300">
+                    <v-icon size="48" class="mb-2">mdi-cart-outline</v-icon>
+                    <p><em>Your cart is empty</em></p>
+                </div>
             </v-card-text>
-        </v-card>
-    </v-dialog>
-
-    <v-dialog v-model="customerInfoDialog" max-width="700">
-        <v-card class="bg-gray-800 text-white">
-            <v-card-title class="flex">
-                <h1 class="text-xl text-white">Please Insert Customer Details...</h1>
-
+            <v-card-actions v-if="cart.length" class="pa-4 flex-wrap ga-2">
+                <span class="text-lg font-bold">Selected: {{ peso(selectedCartTotal) }}</span>
                 <v-spacer />
-                <v-icon color="red" @click="customerInfoDialog = false">mdi-close</v-icon>
-            </v-card-title>
-            <p class="pl-4 mt-n2 text-gray-400">for shipment purposes</p>
-            <br>
-            <v-row class="pl-4 pr-4">
-                <v-col cols="6">
-                    <v-text-field v-model="customerInfo.fullName" density="compact" label="Customer Full Name"
-                        prepend-inner-icon="mdi-account"></v-text-field>
-                </v-col>
-                <v-col cols="6">
-                    <v-text-field v-model="customerInfo.email" density="compact" label="Email Adress"
-                        prepend-inner-icon="mdi-email"></v-text-field>
-                </v-col>
-            </v-row>
-            <v-row class="pl-4 pr-4">
-                <v-col cols="6">
-                    <v-select v-model="customerInfo.paymentMethod" density="compact" label="Payment Method"
-                        prepend-inner-icon="mdi-credit-card-settings-outline"
-                        :items="['Cash-on-Delivery', 'Credit Card', 'Debit Card']"></v-select>
-                </v-col>
-                <v-col cols="6">
-                    <v-text-field v-model="customerInfo.contactNo" density="compact" label="Contact No. #"
-                        prepend-inner-icon="mdi-cellphone"></v-text-field>
-                </v-col>
-            </v-row>
-            <v-row class="pl-4 pr-4">
-                <v-col cols="12">
-                    <v-text-field v-model="customerInfo.address" density="compact" label="Address"
-                        prepend-inner-icon="mdi-map-marker"></v-text-field>
-                </v-col>
-            </v-row>
-            <v-card-action class="pa-4">
-                <v-row>
-                    <v-col cols="" />
-                    <v-col cols="3">
-                        <v-btn @click="submitCustomerInfo" color="primary">Submit details</v-btn>
-                    </v-col>
-
-                </v-row>
-
-            </v-card-action>
+                <v-btn @click="openCheckOut" color="green" variant="elevated" prepend-icon="mdi-cash-register"
+                    :disabled="selectedCartTotal === 0">Proceed to Check-out</v-btn>
+            </v-card-actions>
         </v-card>
     </v-dialog>
 
-    <v-dialog v-model="reviewDialog" max-width="750px">
+    <v-dialog v-model="customerInfoDialog" max-width="700" scrollable :fullscreen="$vuetify.display.xs">
+        <v-card class="bg-gray-800 text-white">
+            <v-card-title class="flex items-center">
+                <h1 class="text-lg sm:text-xl text-white">Customer Details</h1>
+                <v-spacer />
+                <v-btn icon="mdi-close" variant="text" color="red" aria-label="Close"
+                    @click="customerInfoDialog = false" />
+            </v-card-title>
+            <v-card-text>
+                <p class="mt-n2 mb-4 text-gray-400">for shipment purposes</p>
+                <v-row>
+                    <v-col cols="12" sm="6">
+                        <v-text-field v-model="customerInfo.fullName" density="compact" label="Customer Full Name"
+                            prepend-inner-icon="mdi-account"></v-text-field>
+                    </v-col>
+                    <v-col cols="12" sm="6">
+                        <v-text-field v-model="customerInfo.email" density="compact" label="Email Adress"
+                            prepend-inner-icon="mdi-email"></v-text-field>
+                    </v-col>
+                    <v-col cols="12" sm="6">
+                        <v-select v-model="customerInfo.paymentMethod" density="compact" label="Payment Method"
+                            prepend-inner-icon="mdi-credit-card-settings-outline"
+                            :items="['Cash-on-Delivery', 'Credit Card', 'Debit Card']"></v-select>
+                    </v-col>
+                    <v-col cols="12" sm="6">
+                        <v-text-field v-model="customerInfo.contactNo" density="compact" label="Contact No. #"
+                            prepend-inner-icon="mdi-cellphone" inputmode="tel"></v-text-field>
+                    </v-col>
+                    <v-col cols="12">
+                        <v-text-field v-model="customerInfo.address" density="compact" label="Address"
+                            prepend-inner-icon="mdi-map-marker"></v-text-field>
+                    </v-col>
+                </v-row>
+            </v-card-text>
+            <v-card-actions class="pa-4">
+                <v-spacer />
+                <v-btn @click="submitCustomerInfo" color="primary" variant="elevated">Submit details</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="reviewDialog" max-width="750px" scrollable :fullscreen="$vuetify.display.xs">
         <v-card class="bg-gray-800 text-white">
             <v-card-title><v-icon>mdi-shopping</v-icon> Order Review</v-card-title>
             <v-card-text>
                 <h3 class="text-lg mb-2 text-gray-200"><v-icon>mdi-information-variant</v-icon> Customer Information
                 </h3>
-                <v-row class="mt-2">
-                    <v-col cols="6">
-                        <p class="ma-2 text-gray-400"><v-icon class="mr-2 text-white">mdi-account</v-icon><strong
+                <v-row dense class="mt-2">
+                    <v-col cols="12" sm="6">
+                        <p class="ma-1 text-gray-400"><v-icon class="mr-2 text-white">mdi-account</v-icon><strong
                                 class="text-white">Name:</strong> {{
                                     customerInfo.fullName }}</p>
                     </v-col>
-                    <v-col cols="6">
-                        <p class="ma-2 text-gray-400"><v-icon class="mr-2 text-white">mdi-email</v-icon><strong
+                    <v-col cols="12" sm="6">
+                        <p class="ma-1 text-gray-400 text-break"><v-icon class="mr-2 text-white">mdi-email</v-icon><strong
                                 class="text-white">Email:</strong> {{
                                     customerInfo.email }}</p>
                     </v-col>
-                    <v-col cols="6" class="mt-n6">
-                        <p class="ma-2 text-gray-400"><v-icon class="mr-2 text-white">mdi-credit-card</v-icon><strong
+                    <v-col cols="12" sm="6">
+                        <p class="ma-1 text-gray-400"><v-icon class="mr-2 text-white">mdi-credit-card</v-icon><strong
                                 class="text-white">Payment Method:</strong> {{
                                     customerInfo.paymentMethod }}</p>
                     </v-col>
-                    <v-col cols="6" class="mt-n6">
-                        <p class="ma-2 text-gray-400"><v-icon class="mr-2 text-white">mdi-cellphone</v-icon><strong
+                    <v-col cols="12" sm="6">
+                        <p class="ma-1 text-gray-400"><v-icon class="mr-2 text-white">mdi-cellphone</v-icon><strong
                                 class="text-white">Contact No:</strong> {{
                                     customerInfo.contactNo }}</p>
                     </v-col>
-                    <v-col cols="6" class="mt-n6">
-                        <p class="ma-2 text-gray-400"><v-icon class="mr-2 text-white">mdi-map-marker</v-icon><strong
+                    <v-col cols="12">
+                        <p class="ma-1 text-gray-400"><v-icon class="mr-2 text-white">mdi-map-marker</v-icon><strong
                                 class="text-white">Address:</strong> {{
                                     customerInfo.address }}</p>
                     </v-col>
@@ -293,17 +299,19 @@
                             <div class="text-h6 font-weight-bold">{{ item.MotorcycleName }}</div>
                             <div class="text-body-2 mb-2">x{{ item.quantity }}</div>
                             <div class="text-subtitle-1 font-weight-bold">
-                                ${{ new Intl.NumberFormat('en-US').format(item.Price * item.quantity) }}
+                                {{ peso(item.Price * item.quantity) }}
                             </div>
                         </v-card>
                     </v-col>
                 </v-row>
                 <br>
-                <h3>Total: ${{ new Intl.NumberFormat('en-US').format(selectedCartTotal) }}</h3>
+                <h3 class="text-lg font-bold">Total: {{ peso(selectedCartTotal) }}</h3>
             </v-card-text>
-            <v-card-actions>
-                <v-btn color="green" @click="insertOrderDetails">Confirm Order</v-btn>
-                <v-btn text @click="reviewDialog = false">Cancel</v-btn>
+            <v-card-actions class="pa-4 flex-wrap">
+                <v-spacer />
+                <v-btn variant="text" @click="reviewDialog = false">Cancel</v-btn>
+                <v-btn color="green" variant="elevated" :loading="placingOrder" @click="insertOrderDetails">Confirm
+                    Order</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -314,11 +322,23 @@
 <script>
 import api, { errorMessage } from '../../services/api';
 import { useMainStore } from '../../stores/mainStore';
+import { peso } from '../../utils/format';
+
+const readCart = () => {
+    try {
+        return JSON.parse(localStorage.getItem('cart')) || [];
+    } catch {
+        return [];
+    }
+};
 
 export default {
+    setup() {
+        return { store: useMainStore() };
+    },
     data() {
         return {
-            
+            placingOrder: false,
             customerInfo: {
                 fullName: '',
                 email: '',
@@ -330,7 +350,8 @@ export default {
             customerInfoDialog: false,
             reviewDialog: false,
             sortBy: 'nameAsc',
-            cart: JSON.parse(localStorage.getItem('cart')) || [],
+            // The cart belongs to a logged-in user; guests are asked to log in before adding.
+            cart: this.store.isLoggedIn ? readCart() : [],
             cartDialog: false,
             customerInfoDialog: false,
             sortOptions: [
@@ -363,6 +384,13 @@ export default {
         }
     },
     computed: {
+        isLoggedIn() {
+            return this.store.isLoggedIn;
+        },
+        carouselHeight() {
+            const { xs, sm } = this.$vuetify.display;
+            return xs ? 260 : (sm ? 400 : 600);
+        },
         selectedCartTotal() {
             return this.cart
                 .filter(item => item.selected)
@@ -415,7 +443,10 @@ export default {
         },
     },
     methods: {
+        peso,
         async insertOrderDetails() {
+            if (this.placingOrder) return;
+            this.placingOrder = true;
             try {
                 // The server prices the order from its own data; only ids and quantities are sent.
                 await api.post('/orders', {
@@ -434,6 +465,8 @@ export default {
                 console.error('Order error:', error);
                 alert(errorMessage(error, 'Failed to place order. Please try again.'));
                 this.getMotorcycles();
+            } finally {
+                this.placingOrder = false;
             }
         },
 
@@ -463,20 +496,32 @@ export default {
             this.cart = this.cart.filter(item => item._id !== itemId);
             alert('Item removed from cart.');
         },
+        // Guests get the login pop-up first; the bike is added once they are logged in.
         addToCart(motorcycle) {
-            const cartItem = this.cart.find(item => item._id === motorcycle._id);
-            if (cartItem) {
-                cartItem.quantity++;
-            } else {
-                this.cart.push({ ...motorcycle, quantity: 1, selected: true });
-            }
-            alert(`${motorcycle.MotorcycleName} added to cart!`);
+            this.store.requireLogin(() => {
+                if (!this.cart.length) this.cart = readCart();
+                const cartItem = this.cart.find(item => item._id === motorcycle._id);
+                if (cartItem) {
+                    if (cartItem.quantity < motorcycle.Stock) cartItem.quantity++;
+                } else {
+                    this.cart.push({ ...motorcycle, quantity: 1, selected: true });
+                }
+                alert(`${motorcycle.MotorcycleName} added to cart!`);
+            });
+        },
+        openCart() {
+            this.store.requireLogin(() => {
+                this.cartDialog = true;
+            });
         },
         selectTab(tab) {
             this.currentTab = tab;
         },
         openCheckOut() {
-            const { user } = useMainStore();
+            this.store.requireLogin(() => this.showCustomerInfo());
+        },
+        showCustomerInfo() {
+            const { user } = this.store;
             this.customerInfo = {
                 fullName: user?.name || '',
                 email: user?.email || '',
@@ -514,9 +559,23 @@ export default {
     watch: {
         cart: {
             handler(newCart) {
-                localStorage.setItem('cart', JSON.stringify(newCart));
+                if (!this.isLoggedIn) return;
+                try {
+                    localStorage.setItem('cart', JSON.stringify(newCart));
+                } catch {
+                    // storage unavailable; the cart still works for this visit
+                }
             },
             deep: true
+        },
+        isLoggedIn(loggedIn) {
+            // Logging out (store.logout clears storage) must also empty the cart on screen.
+            if (!loggedIn) {
+                this.cart = [];
+                this.cartDialog = false;
+                this.customerInfoDialog = false;
+                this.reviewDialog = false;
+            }
         }
     },
     mounted() {

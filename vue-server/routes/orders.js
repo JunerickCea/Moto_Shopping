@@ -2,6 +2,7 @@ const express = require('express');
 const { z } = require('zod');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { order: serializeOrder } = require('../lib/serializers');
+const { HttpError } = require('../lib/httpError');
 
 const router = express.Router();
 
@@ -21,18 +22,16 @@ const orderSchema = z.object({
 
 const statusSchema = z.object({ status: z.enum(['Shipped', 'Cancelled']) });
 
-class HttpError extends Error {
-  constructor(status, message) {
-    super(message);
-    this.status = status;
-    this.expose = true;
-  }
-}
-
 async function withItems(db, orders) {
   if (!orders.length) return [];
-  const items = await db('order_items').whereIn('order_id', orders.map((o) => o.id)).orderBy('id');
-  return orders.map((o) => serializeOrder(o, items.filter((i) => i.order_id === o.id)));
+  const ids = orders.map((o) => o.id);
+  const items = await db('order_items').whereIn('order_id', ids).orderBy('id');
+  const reviews = await db('feedback').whereIn('order_id', ids);
+  return orders.map((o) => serializeOrder(
+    o,
+    items.filter((i) => i.order_id === o.id),
+    reviews.find((r) => r.order_id === o.id),
+  ));
 }
 
 router.post('/', requireAuth, async (req, res) => {

@@ -43,7 +43,7 @@ const orderItem = (i) => ({
   quantity: i.quantity,
 });
 
-const order = (o, items) => ({
+const order = (o, items, review = null) => ({
   _id: String(o.id),
   userId: o.user_id,
   status: o.status,
@@ -57,6 +57,41 @@ const order = (o, items) => ({
     paymentMethod: o.payment_method,
   },
   items: items.map(orderItem),
+  feedback: review && { rating: review.rating, comment: review.comment },
 });
 
-module.exports = { sessionUser, adminUser, motorcycle, order };
+// "Juan Dela Cruz" -> "Juan C." so public reviews never show a customer's full name.
+const shortName = (fullName) => {
+  const words = (fullName || '').trim().split(/\s+/).filter(Boolean);
+  if (words.length < 2) return words[0] || 'Customer';
+  return `${words[0]} ${words[words.length - 1][0].toUpperCase()}.`;
+};
+
+const itemNames = (items) => items.map((i) => `${i.brand} ${i.name}`);
+
+// `f` is a feedback row joined with its order's full_name/email; `items` are that order's order_items.
+const publicFeedback = (f, items) => ({
+  _id: String(f.id),
+  rating: f.rating,
+  comment: f.comment,
+  customer: shortName(f.full_name),
+  motorcycles: itemNames(items),
+  createdAt: f.created_at,
+});
+
+const adminFeedback = (f, items) => ({
+  ...publicFeedback(f, items),
+  orderId: String(f.order_id),
+  fullName: f.full_name,
+  email: f.email,
+  isHidden: f.is_hidden,
+});
+
+const shopInfo = (s) => ({
+  name: s.name,
+  address: s.address,
+  contactNo: s.contact_no,
+  openingHours: s.opening_hours,
+});
+
+module.exports = { sessionUser, adminUser, motorcycle, order, publicFeedback, adminFeedback, shopInfo };

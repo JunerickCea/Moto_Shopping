@@ -6,12 +6,12 @@
             <v-chip class="ml-3">{{ users.length }}</v-chip>
         </v-card-title>
 
-        <v-container>
+        <v-container class="px-2 px-sm-4">
             <v-text-field v-model="search" density="compact" label="Search name or email..." variant="outlined"
                 prepend-inner-icon="mdi-magnify" clearable class="mb-2" />
 
             <v-data-table :headers="headers" :items="users" :search="search" :loading="loading"
-                class="bg-gray-600 text-white" no-data-text="No users yet">
+                :mobile="$vuetify.display.xs" class="bg-gray-600 text-white" no-data-text="No users yet">
                 <template v-slot:item.name="{ item }">
                     <div class="d-flex align-center py-2">
                         <v-avatar size="36" color="primary" class="mr-3">

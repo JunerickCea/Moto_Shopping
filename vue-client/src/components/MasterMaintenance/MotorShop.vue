@@ -1,11 +1,11 @@
 <template>
     <v-card class="w-full h-full ">
-        <v-card-title class="flex items-center  border-b bg-black text-white">
-            <v-icon>mdi-motorbike</v-icon>
-            <h1>Motorcycle Shop Admin</h1>
+        <v-card-title class="flex flex-wrap items-center gap-y-2 border-b bg-black text-white">
+            <v-icon class="mr-2">mdi-motorbike</v-icon>
+            <h1 class="text-lg sm:text-xl">Motorcycle Shop Admin</h1>
             <v-spacer />
 
-            <nav class="tabs" @keydown="handleKeydown">
+            <nav class="tabs flex flex-wrap gap-x-3" role="tablist" @keydown="handleKeydown">
                 <button v-for="tab in tabs" :key="tab.label" role="tab" :aria-selected="currentTab === tab.label"
                     :tabindex="currentTab === tab.label ? 0 : -1" :class="{ active: currentTab === tab.label }"
                     @click="selectTab(tab.label)">
@@ -17,9 +17,9 @@
         <div v-if="currentTab === 'Inventory'" class="bg-gray-700">
             <br>
             <h1 class="text-sm sm:text-base ml-4 text-white">Manage your motorcycle inventory with ease</h1>
-            <v-container>
+            <v-container class="px-2 px-sm-4">
                 <v-card class="bg-gray-600">
-                    <div class="flex gap-2 pa-5 text-2xl">
+                    <div class="flex flex-wrap items-center gap-2 pa-3 pa-sm-5 text-lg sm:text-2xl">
                         <v-chip class="bg-green-200"> <v-icon>mdi-package-variant-closed</v-icon>Total Stock:
                             {{ motorcycleDetails.length }}</v-chip>
                         <v-spacer />
@@ -30,26 +30,27 @@
                 <br>
                 <v-toolbar class="bg-gray-600 text-white text-lg font-seibold"><v-icon
                         class="ml-3 text-yellow-500">mdi-star</v-icon>Featured Motorcycles</v-toolbar>
-                <v-carousel v-model="activeSlide" height="600" interval="10000" :show-arrows-on-hover="true"
+                <v-carousel v-model="activeSlide" :height="carouselHeight" interval="10000"
+                    :show-arrows="$vuetify.display.xs ? false : 'hover'"
                     transition="fade-transition" reverse-transition="fade-transition" hide-delimiters-on-hover
                     class="bg-gradient-to-t from-slate-800 via-slate-900 to-black" cycle>
                     <v-carousel-item v-for="motorcycle in motorcycleDetails" :key="motorcycle._id">
                         <v-img :src="motorcycle.Image" alt="Motorcycle"
                             class="w-full h-full object-cover rounded-lg hover:scale-105 transition-transform"></v-img>
-                        <div class="absolute inset-0 flex flex-col justify-between text-white px-10 py-8">
+                        <div class="absolute inset-0 flex flex-col justify-between text-white px-4 py-4 sm:px-10 sm:py-8">
                             <div>
                                 <h1 class="px-3 py-1 text-xs font-semibold tracking-wide  uppercase">
                                     <v-icon class="mr-2 text-yellow-600">mdi-star</v-icon>
                                     Featured
                                 </h1>
-                                <h2 class="mt-4 text-4xl font-bold">
+                                <h2 class="mt-2 sm:mt-4 text-2xl sm:text-4xl font-bold">
                                     {{ motorcycle.Brand }} {{ motorcycle.MotorcycleName }}
                                 </h2>
-                                <p class="mt-2 text-lg opacity-80">
+                                <p class="mt-2 text-base sm:text-lg opacity-80">
                                     {{ motorcycle.Brand }}
                                 </p>
-                                <p class="mt-4 text-3xl font-bold">
-                                    ${{ new Intl.NumberFormat('en-US').format(motorcycle.Price) }}
+                                <p class="mt-2 sm:mt-4 text-xl sm:text-3xl font-bold">
+                                    {{ peso(motorcycle.Price) }}
                                 </p>
                             </div>
 
@@ -101,7 +102,7 @@
                         <div class="flex gap-2 items-center">
                             <v-icon
                                 class="text-2xl sm:text-3xl border-2 border-red-600 rounded-full p-4 sm:p-6 text-white"
-                                style="background-color:#C62828">mdi-currency-usd</v-icon>
+                                style="background-color:#C62828">mdi-currency-php</v-icon>
                             <h1 class="text-xl sm:text-2xl font-semibold text-gray-800 ml-2 text-white">{{ totalValue }}
                             </h1>
                         </div>
@@ -125,23 +126,22 @@
                 </v-card>
                 <br>
 
-                <v-toolbar flat style="background-color: #000000;">
-                    <v-toolbar-title
-                        class=" font-semibold text-lg text-gray-200 transition-color duration-300"><v-icon>mdi-warehouse</v-icon>
+                <div class="flex flex-wrap items-center gap-2 px-4 py-3" style="background-color: #000000;">
+                    <span class="font-semibold text-lg text-gray-200"><v-icon>mdi-warehouse</v-icon>
                         Inventory
-                        <v-chip>{{ motorcycleDetails.length }}</v-chip></v-toolbar-title>
-
-                    <nav class="tabs2" @keydown="handleKeydown">
-                        <button v-for="tab2 in tabs2" :key="tab2.label" role="tab2"
+                        <v-chip>{{ motorcycleDetails.length }}</v-chip></span>
+                    <v-spacer />
+                    <nav class="tabs2" role="tablist">
+                        <button v-for="tab2 in tabs2" :key="tab2.label" role="tab"
                             :aria-selected="currentTab2 === tab2.label" :tabindex="currentTab2 === tab2.label ? 0 : -1"
                             :class="{ active: currentTab2 === tab2.label }" @click="selectTab2(tab2.label)">
                             <v-icon left small>{{ tab2.icon }}</v-icon> {{ tab2.label }}
                         </button>
                     </nav>
-                </v-toolbar>
+                </div>
                 <div v-if="currentTab2 === 'View-Table'">
                     <v-data-table :headers="headers" :items="filteredTableData" :search="search"
-                        class="bg-gray-600 text-white">
+                        :mobile="$vuetify.display.xs" class="bg-gray-600 text-white">
 
                         <template v-slot:item.Image="{ item }">
                             <v-avatar size="70" class="hover:scale-110">
@@ -149,9 +149,7 @@
                             </v-avatar>
                         </template>
                         <template v-slot:item.Price="{ item }">
-                            <h1 class="text-lg font-semibold">${{ new
-                                Intl.NumberFormat('en-US').format(item.Price) }}
-                            </h1>
+                            <h1 class="text-lg font-semibold">{{ peso(item.Price) }}</h1>
                         </template>
                         <template v-slot:item.Stock="{ item }">
                             <v-chip class="text-sm sm:text-base text-black"
@@ -200,7 +198,7 @@
                                     <p class="text-sm opacity-80 mb-2">{{ motorcycle.Brand }}</p>
 
                                     <p class="text-2xl font-bold mb-2">
-                                        ${{ new Intl.NumberFormat('en-US').format(motorcycle.Price) }}
+                                        {{ peso(motorcycle.Price) }}
                                     </p>
 
                                     <p class="text-xs opacity-75">
@@ -217,7 +215,7 @@
                                         @click="updateMotorcycleDialog(motorcycle)">Edit
                                     </v-btn>
                                     <v-btn prepend-icon="mdi-trash-can-outline" color="error"
-                                        @click="deleteMotorcycle(item)">delete
+                                        @click="deleteMotorcycle(motorcycle)">delete
                                     </v-btn>
                                 </v-card-actions>
                             </v-card>
@@ -234,7 +232,7 @@
 
         <!-- Orders -->
         <div v-if="currentTab === 'Orders'" class="bg-gray-700">
-            <v-container class="bg">
+            <v-container class="bg px-2 px-sm-4">
 
                 <div class="flex flex-col sm:flex-row sm:flex-wrap gap-2">
                     <v-card class="p-5 sm:p-6 md:p-10 mt-5 bg-gray-600 w-full sm:w-1/2 md:w-1/4 lg:w-1/4  ">
@@ -298,14 +296,13 @@
                     </div>
                 </v-card>
                 <br>
-                <v-toolbar flat style="background-color: #000000;">
-                    <v-toolbar-title
-                        class=" font-semibold text-lg text-gray-200 transition-color duration-300"><v-icon>mdi-list-box</v-icon>
+                <div class="px-4 py-3" style="background-color: #000000;">
+                    <span class="font-semibold text-lg text-gray-200"><v-icon>mdi-list-box</v-icon>
                         Orders
-                        <v-chip>{{ orderedMotorcycles.length }}</v-chip></v-toolbar-title>
-                </v-toolbar>
+                        <v-chip>{{ orderedMotorcycles.length }}</v-chip></span>
+                </div>
                 <v-data-table :headers="orderedHeaders" :items="filteredOrderedData" :search="search"
-                    class="bg-gray-600 text-white">
+                    :mobile="$vuetify.display.xs" class="bg-gray-600 text-white">
 
                     <template v-slot:item.Image="{ item }">
                         <v-avatar size="70" class="hover:scale-110">
@@ -316,9 +313,7 @@
                         {{ formatDate(item.orderDate) }}
                     </template>
                     <template v-slot:item.total="{ item }">
-                        <h1 class="text-lg font-semibold">${{ new
-                            Intl.NumberFormat('en-US').format(item.total) }}
-                        </h1>
+                        <h1 class="text-lg font-semibold">{{ peso(item.total) }}</h1>
                     </template>
                     <template v-slot:item.status="{ item }">
                         <v-chip class="text-sm sm:text-base text-white" :color="getStatusColor(item.status)">
@@ -336,93 +331,95 @@
                 </v-data-table>
             </v-container>
         </div>
+
+        <div v-if="currentTab === 'Feedback'" class="bg-gray-700">
+            <FeedbackAdmin />
+        </div>
+
+        <div v-if="currentTab === 'Shop Info'" class="bg-gray-700">
+            <ShopInfoAdmin />
+        </div>
     </v-card>
 
     <!-- Add motorcycle dialog -->
-    <v-dialog v-model="addDialog" max-width="700px" persistent>
+    <v-dialog v-model="addDialog" max-width="700px" persistent scrollable :fullscreen="$vuetify.display.xs">
         <v-card class="bg-gradient-to-t from-slate-800 via-slate-800 to-black text-white">
-            <v-card-title class="flex gap-2">
+            <v-card-title class="flex items-center gap-2">
                 <v-icon class="text-md  border-2 border-blue-800 rounded-full p-4  text-white"
                     style="background-color: blue">mdi-plus</v-icon>
-                <h1 style="font-family: 'Slunt', sans-serif;">{{ this.title }}</h1>
+                <h1 class="text-lg sm:text-xl" style="font-family: 'Slunt', sans-serif;">{{ this.title }}</h1>
                 <v-spacer />
-                <v-icon @click="closeAddDialog()" color="red">mdi-close</v-icon>
+                <v-btn icon="mdi-close" variant="text" color="red" aria-label="Close" @click="closeAddDialog()" />
             </v-card-title>
-            <br />
-            <v-row class="pl-4 pr-4">
-                <v-col cols="6">
-                    <v-text-field label="Brand" density="compact" variant="outlined" prepend-inner-icon="mdi-tag-plus"
-                        v-model="newMotorcycle.Brand" :rules="[rules.required]" />
-                </v-col>
-                <v-col cols="6">
-                    <v-text-field label="Motorcycle Name" density="compact" variant="outlined"
-                        prepend-inner-icon="mdi-motorbike" v-model="newMotorcycle.MotorcycleName"
-                        :rules="[rules.required]" />
-                </v-col>
-            </v-row>
-            <v-row class="pl-4 pr-4 mt-n3">
-                <v-col cols="6">
-                    <v-text-field type="date" label="Release Date" density="compact" variant="outlined"
-                        prepend-inner-icon="mdi-calendar" v-model="newMotorcycle.ReleaseDate"
-                        :rules="[rules.required]" />
-                </v-col>
-                <v-col cols="6">
-                    <v-text-field type="number" label="Price ($)" density="compact" variant="outlined"
-                        prepend-inner-icon="mdi-currency-usd" v-model="newMotorcycle.Price"
-                        :rules="[rules.required, rules.positiveNumber]" />
-                </v-col>
-            </v-row>
-            <v-row class="pl-4 pr-4 mt-n3">
-                <v-col cols="6">
-                    <v-text-field type="number" label="Stock Quantity" density="compact" variant="outlined"
-                        prepend-inner-icon="mdi-package-variant" v-model="newMotorcycle.Stock"
-                        :rules="[rules.required, rules.integer]" />
-                </v-col>
-                <v-col cols="6">
-                    <v-text-field type="number" label="Available Quantity" density="compact" variant="outlined"
-                        prepend-inner-icon="mdi-counter" v-model="newMotorcycle.Quantity"
-                        :rules="[rules.required, rules.integer]" />
-                </v-col>
-            </v-row>
-            <v-row class="pl-4 pr-4 mt-n3">
-                <v-col>
-                    <v-text-field label="Image Link" density="compact" variant="outlined" prepend-inner-icon="mdi-image"
-                        v-model="newMotorcycle.Image" :rules="[rules.required]" />
-                    <div v-if="newMotorcycle.Image" class="text-center">
-                        <v-img max-height="200" :src="newMotorcycle.Image" alt="Motorcycle"></v-img>
-                    </div>
-                </v-col>
-            </v-row>
-            <br>
-            <v-card-actions class="pl-4 pr-4 mt-n3">
+            <v-card-text>
+                <v-row dense>
+                    <v-col cols="12" sm="6">
+                        <v-text-field label="Brand" density="compact" variant="outlined"
+                            prepend-inner-icon="mdi-tag-plus" v-model="newMotorcycle.Brand"
+                            :rules="[rules.required]" />
+                    </v-col>
+                    <v-col cols="12" sm="6">
+                        <v-text-field label="Motorcycle Name" density="compact" variant="outlined"
+                            prepend-inner-icon="mdi-motorbike" v-model="newMotorcycle.MotorcycleName"
+                            :rules="[rules.required]" />
+                    </v-col>
+                    <v-col cols="12" sm="6">
+                        <v-text-field type="date" label="Release Date" density="compact" variant="outlined"
+                            prepend-inner-icon="mdi-calendar" v-model="newMotorcycle.ReleaseDate"
+                            :rules="[rules.required]" />
+                    </v-col>
+                    <v-col cols="12" sm="6">
+                        <v-text-field type="number" label="Price (₱)" density="compact" variant="outlined"
+                            prepend-inner-icon="mdi-currency-php" v-model="newMotorcycle.Price"
+                            :rules="[rules.required, rules.positiveNumber]" />
+                    </v-col>
+                    <v-col cols="12" sm="6">
+                        <v-text-field type="number" label="Stock Quantity" density="compact" variant="outlined"
+                            prepend-inner-icon="mdi-package-variant" v-model="newMotorcycle.Stock"
+                            :rules="[rules.required, rules.integer]" />
+                    </v-col>
+                    <v-col cols="12" sm="6">
+                        <v-text-field type="number" label="Available Quantity" density="compact" variant="outlined"
+                            prepend-inner-icon="mdi-counter" v-model="newMotorcycle.Quantity"
+                            :rules="[rules.required, rules.integer]" />
+                    </v-col>
+                    <v-col cols="12">
+                        <v-text-field label="Image Link" density="compact" variant="outlined"
+                            prepend-inner-icon="mdi-image" v-model="newMotorcycle.Image" :rules="[rules.required]" />
+                        <div v-if="newMotorcycle.Image" class="text-center">
+                            <v-img max-height="200" :src="newMotorcycle.Image" alt="Motorcycle"></v-img>
+                        </div>
+                    </v-col>
+                </v-row>
+            </v-card-text>
+            <v-card-actions class="pa-4">
                 <v-spacer />
-                <v-btn color="primary" @click="inserMotorcycle">Save</v-btn>
+                <v-btn color="primary" variant="elevated" @click="inserMotorcycle">Save</v-btn>
             </v-card-actions>
-            <br>
         </v-card>
     </v-dialog>
 
-    <v-dialog v-model="eyeDialog" max-width="700px" persistent>
+    <v-dialog v-model="eyeDialog" max-width="700px" persistent scrollable :fullscreen="$vuetify.display.xs">
         <v-card class="bg-gradient-to-t from-slate-800 via-slate-800 to-black text-white">
-            <v-card-title class="flex gap-2">
+            <v-card-title class="flex items-center gap-2">
                 <v-icon class="text-2xl  border-2 border-green-600 rounded-full p-4  text-black"
                     style="background-color:#43A047">mdi-information-variant</v-icon>
-                <h1>Motorcycle Details</h1>
+                <h1 class="text-lg sm:text-xl">Motorcycle Details</h1>
                 <v-spacer />
-                <v-icon @click="closeAddDialog()" color="red">mdi-close</v-icon>
+                <v-btn icon="mdi-close" variant="text" color="red" aria-label="Close" @click="closeAddDialog()" />
             </v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col cols="12">
                         <v-img :src="checkItem?.Image" max-height="400" contain />
                     </v-col>
-                    <v-col cols="8" class="pa-4">
+                    <v-col cols="12" sm="8" class="pa-4">
                         <p class="pa-2"><v-icon
                                 class="text-green-300 mr-2">mdi-tag-outline</v-icon><strong>Brand:</strong>
                             {{ checkItem?.Brand }}</p>
                         <p class="pa-2"><v-icon
-                                class="text-green-300 mr-2">mdi-currency-usd</v-icon><strong>Price:</strong>
-                            ${{ checkItem?.Price }}</p>
+                                class="text-green-300 mr-2">mdi-currency-php</v-icon><strong>Price:</strong>
+                            {{ peso(checkItem?.Price) }}</p>
                         <p class="pa-2"><v-icon
                                 class="text-green-300 mr-2">mdi-package-variant</v-icon><strong>Stock:</strong> {{
                                     checkItem?.Stock }}</p>
@@ -437,9 +434,9 @@
         </v-card>
     </v-dialog>
 
-    <v-dialog v-model="reviewDialog" max-width="900px">
+    <v-dialog v-model="reviewDialog" max-width="900px" scrollable :fullscreen="$vuetify.display.xs">
         <v-card class="bg-gray-900 text-white">
-            <v-card-title class="text-h5 font-weight-bold">
+            <v-card-title class="text-h6 text-sm-h5 font-weight-bold">
                 <v-icon color="blue" class="mr-3">mdi-file-document</v-icon>
                 Order Details
             </v-card-title>
@@ -527,11 +524,11 @@
                 <!-- Order items -->
                 <div class="text-h6 font-weight-bold mb-4">Order Items</div>
                 <div v-for="item in reviewDialogDetails.items" :key="item._id"
-                    class="d-flex justify-space-between mb-3">
+                    class="d-flex align-center ga-3 mb-3">
+                    <v-avatar size="50">
+                        <v-img :src="item.Image" contain></v-img>
+                    </v-avatar>
                     <div>
-                        <v-avatar size="50" class="mr-3">
-                            <v-img :src="item.Image" contain></v-img>
-                        </v-avatar>
                         <div class="font-weight-bold">
                             {{ item.quantity }}x {{ item.MotorcycleName }}
                         </div>
@@ -539,8 +536,9 @@
                             {{ item.Brand }}
                         </div>
                     </div>
-                    <div class="font-weight-bold">
-                        ${{ new Intl.NumberFormat('en-PH').format(Number(item.Price) * item.quantity) }}
+                    <v-spacer />
+                    <div class="font-weight-bold text-no-wrap">
+                        {{ peso(Number(item.Price) * item.quantity) }}
                     </div>
                 </div>
 
@@ -548,15 +546,15 @@
                 <v-divider class="my-6"></v-divider>
 
                 <!-- Total -->
-                <div class="d-flex justify-space-between align-center">
+                <div class="d-flex flex-wrap justify-space-between align-center">
                     <div class="text-h6 font-weight-bold">Total:</div>
-                    <div class="text-h4 font-weight-bold">
-                        ${{ new Intl.NumberFormat('en-US').format(reviewDialogDetails.total) }}
+                    <div class="text-h5 text-sm-h4 font-weight-bold">
+                        {{ peso(reviewDialogDetails.total) }}
                     </div>
                 </div>
             </v-card-text>
 
-            <v-card-actions class="justify-end pa-4">
+            <v-card-actions class="justify-end flex-wrap ga-2 pa-4">
                 <v-btn color="green" dark class="mr-2" @click="approveOrder">
                     APPROVE ORDER
                 </v-btn>
@@ -577,8 +575,12 @@
 <script>
 
 import api, { errorMessage } from '../../services/api';
+import { peso } from '../../utils/format';
+import FeedbackAdmin from './FeedbackAdmin.vue';
+import ShopInfoAdmin from './ShopInfoAdmin.vue';
 
 export default {
+    components: { FeedbackAdmin, ShopInfoAdmin },
     data() {
         return {
             sortBy: 'nameAsc',
@@ -625,7 +627,9 @@ export default {
             checkItem: {},
             tabs: [
                 { label: 'Inventory', icon: 'mdi-warehouse' },
-                { label: 'Orders', icon: 'mdi-clipboard-list' }
+                { label: 'Orders', icon: 'mdi-clipboard-list' },
+                { label: 'Feedback', icon: 'mdi-message-star' },
+                { label: 'Shop Info', icon: 'mdi-store-marker' }
             ],
             tabs2: [
                 { label: 'View-Table', icon: 'mdi-table' },
@@ -726,10 +730,15 @@ export default {
             return this.motorcycleDetails.reduce((sum, m) => sum + parseInt(m.Stock || 0), 0);
         },
         totalValue() {
-            return this.motorcycleDetails.reduce((sum, m) => sum + parseFloat(m.Price || 0), 0).toLocaleString();
+            return peso(this.motorcycleDetails.reduce((sum, m) => sum + parseFloat(m.Price || 0), 0));
+        },
+        carouselHeight() {
+            const { xs, sm } = this.$vuetify.display;
+            return xs ? 260 : (sm ? 400 : 600);
         },
     },
     methods: {
+        peso,
         async setOrderStatus(status) {
             try {
                 await api.patch(`/orders/${this.reviewDialogDetails._id}/status`, { status })
@@ -848,11 +857,11 @@ export default {
             this.search = ''
         },
         handleKeydown(event) {
-            if (event.key === 'ArrowLeft') {
-                this.selectTab(this.tabs[this.tabs.indexOf(this.currentTab) - 1]);
-            } else if (event.key === 'ArrowRight') {
-                this.selectTab(this.tabs[this.tabs.indexOf(this.currentTab) + 1]);
-            }
+            const step = { ArrowLeft: -1, ArrowRight: 1 }[event.key];
+            if (!step) return;
+            const index = this.tabs.findIndex((tab) => tab.label === this.currentTab);
+            const next = this.tabs[(index + step + this.tabs.length) % this.tabs.length];
+            this.selectTab(next.label);
         }
     },
     mounted() {

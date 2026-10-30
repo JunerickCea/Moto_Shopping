@@ -10,7 +10,8 @@ function securityHeaders({ isProduction }) {
         fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'https:'],
         connectSrc: ["'self'", 'https://accounts.google.com/gsi/'],
-        frameSrc: ["'self'", 'https://accounts.google.com/gsi/'],
+        // Google sign-in button, plus the key-less Google Maps embed of the shop location.
+        frameSrc: ["'self'", 'https://accounts.google.com/gsi/', 'https://www.google.com/maps', 'https://maps.google.com'],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
         formAction: ["'self'"],
